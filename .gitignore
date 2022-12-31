@@ -1,0 +1,6 @@
+# python generted
+env*/
+__pycache__/
+
+# sensitive/unwanted
+keys.py
