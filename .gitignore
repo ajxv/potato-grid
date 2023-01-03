@@ -1,6 +1,7 @@
 # python generted
 env*/
 __pycache__/
+*.log
 
 # sensitive/unwanted
 keys.py
