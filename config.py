@@ -10,3 +10,9 @@ GRID_SIZE = 3
 # time between checks in sec
 CHECK_ORDERS_FREQUENCY = 2
 CLOSED_ORDER_STATUS = 'closed'
+
+# logging
+LOG_FILE = 'trading.log'
+
+# keep list of placed orders (buy/sell)(open)
+ORDER_LOG = 'orders.json'

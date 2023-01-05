@@ -15,8 +15,7 @@ def cancel_orders():
     # Cancel all orders for the symbol
     exchange.cancel_all_orders(config.SYMBOL)
 
-    # Cancel all orders across all symbols
-    # exchange.cancel_all_orders()
+    print("cancelled orders")
 
 def view_orders():
     # Retrieve all active orders for the symbol

@@ -5,3 +5,4 @@ __pycache__/
 # sensitive/unwanted
 keys.py
 *.log
+orders.json
