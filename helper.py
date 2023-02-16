@@ -19,12 +19,15 @@ def cancel_orders():
 
 def view_orders():
     # Retrieve all active orders for the symbol
-    orders = exchange.fetch_open_orders(config.SYMBOL)
+    orders = exchange.fetch_orders(config.SYMBOL)
 
     # Print the orders data
     for order in orders:
         order_info = order['info']
-        print(f"{order_info['symbol']} | {order_info['orderId']} | {order_info['side']} | {order_info['status']}")
+        print(f"{order_info['symbol']} | {order_info['orderId']} | {order_info['side']} | {order_info['status']} | {order_info['price']}")
+
+def balance():
+    print(f"USDT: {exchange.fetch_balance()['USDT']}")
 
 if __name__ == "__main__":
     # get function name as cli-arg
