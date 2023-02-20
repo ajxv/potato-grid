@@ -23,7 +23,7 @@ To use this bot, you need:
 ### Configuration
 
  - Before running the bot, you need to configure it using the `config.py` file.
- - You can adjust the `Config` class variables to match your trading preferences.
+    - You can adjust the `Config` class variables to match your trading preferences.
  - Add your API keys in `keys.py` file: 
 	```python
 	API_KEY = "api-key-goes-here"
