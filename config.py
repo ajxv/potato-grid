@@ -15,8 +15,8 @@ class Config:
     CHECK_ORDERS_FREQUENCY = 2
     FILLED_ORDER_STATUS = 'FILLED'
 
-# Define the log file to use for logging trading information
-LOG_FILE = 'trading.log'
+    # Define the log file to use for logging trading information
+    LOG_FILE = 'trading.log'
 
-# Define the file to use for storing placed orders
-ORDER_LOG = 'orders.json'
+    # Define the file to use for storing placed orders
+    ORDER_LOG = 'orders.json'

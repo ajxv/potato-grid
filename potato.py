@@ -8,13 +8,10 @@ import os
 import keys  # import API key and secret key
 from config import Config  # import configuration values
 
-# create an object for config
-conf = Config()
-
 # set up logging
 logging.basicConfig(level=logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-file_handler = logging.FileHandler(conf.LOG_FILE)
+file_handler = logging.FileHandler(Config.LOG_FILE)
 file_handler.setFormatter(formatter)
 logger = logging.getLogger()
 logger.addHandler(file_handler)
@@ -29,7 +26,7 @@ exchange = ccxt.binance({
 exchange.set_sandbox_mode(True)
 
 # get the latest ticker information for the trading symbol
-ticker = exchange.fetch_ticker(conf.SYMBOL)
+ticker = exchange.fetch_ticker(Config.SYMBOL)
 
 # lists to store the orders
 buy_orders = []
@@ -37,7 +34,7 @@ sell_orders = []
 
 # function to write the current order data to a JSON file
 def write_order_log(new_data, side):
-    with open(conf.ORDER_LOG, 'r+') as file:
+    with open(Config.ORDER_LOG, 'r+') as file:
         try:
             # load existing order data from the file
             file_data = json.load(file)
@@ -71,14 +68,14 @@ def create_sell_order(symbol, size, price):
 def init():
     global buy_orders, sell_orders
 
-    if os.path.exists(conf.ORDER_LOG):
-        with open(conf.ORDER_LOG, 'r+') as file:
+    if os.path.exists(Config.ORDER_LOG):
+        with open(Config.ORDER_LOG, 'r+') as file:
             file_data = json.load(file)
             buy_orders = file_data['buy']
             sell_orders = file_data['sell']
     else:
         # if the file doesn't exist, create an empty one
-        open(conf.ORDER_LOG, 'a').close()
+        open(Config.ORDER_LOG, 'a').close()
 
 # main trading logic
 def main():
@@ -88,17 +85,17 @@ def main():
     
     if not buy_orders:
         # place inital buy orders
-        for i in range(conf.NUM_BUY_GRID_LINES):
-            price = ticker['bid'] - (conf.GRID_STEP_SIZE * (i + 1))
-            create_buy_order(conf.SYMBOL, conf.POSITION_SIZE, price)
+        for i in range(Config.NUM_BUY_GRID_LINES):
+            price = ticker['bid'] - (Config.GRID_STEP_SIZE * (i + 1))
+            create_buy_order(Config.SYMBOL, Config.POSITION_SIZE, price)
         
         # write order logs to file
         write_order_log(buy_orders, 'buy')
 
         # place initial sell orders
-        for i in range(conf.NUM_SELL_GRID_LINES):
-            price = ticker['bid'] + (conf.GRID_SIZE * (i + 1))
-            create_sell_order(conf.SYMBOL, conf.POSITION_SIZE, price)
+        for i in range(Config.NUM_SELL_GRID_LINES):
+            price = ticker['bid'] + (Config.GRID_STEP_SIZE * (i + 1))
+            create_sell_order(Config.SYMBOL, Config.POSITION_SIZE, price)
 
         # write order logs to file
         write_order_log(sell_orders, 'sell')
@@ -110,7 +107,7 @@ def main():
         for buy_order in buy_orders:
             logger.info("=> checking buy order {}".format(buy_order['orderId']))
             try:
-                order = exchange.fetch_order(buy_order['orderId'], conf.SYMBOL)
+                order = exchange.fetch_order(buy_order['orderId'], Config.SYMBOL)
             except Exception as e:
                 logger.error(e)
                 logger.warning("=> request failed, retrying")
@@ -118,20 +115,20 @@ def main():
                 
             order_info = order['info']
 
-            if order_info['status'] == conf.CLOSED_ORDER_STATUS:
+            if order_info['status'] == Config.FILLED_ORDER_STATUS:
                 closed_order_ids.append(order_info['orderId'])
                 logger.info("=> buy order executed at {}".format(order_info['price']))
-                new_sell_price = float(order_info['price']) + conf.GRID_SIZE
+                new_sell_price = float(order_info['price']) + Config.GRID_STEP_SIZE
                 logger.info("=> creating new limit sell order at {}".format(new_sell_price))
-                create_sell_order(conf.SYMBOL, conf.POSITION_SIZE, new_sell_price)
+                create_sell_order(Config.SYMBOL, Config.POSITION_SIZE, new_sell_price)
 
-            time.sleep(conf.CHECK_ORDERS_FREQUENCY)
+            time.sleep(Config.CHECK_ORDERS_FREQUENCY)
 
         # check if sell order is closed
         for sell_order in sell_orders:
             logger.info("=> checking sell order {}".format(sell_order['orderId']))
             try:
-                order = exchange.fetch_order(sell_order['orderId'], conf.SYMBOL)
+                order = exchange.fetch_order(sell_order['orderId'], Config.SYMBOL)
             except Exception as e:
                 logger.error(e)
                 logger.warning("=> request failed, retrying")
@@ -139,14 +136,14 @@ def main():
                 
             order_info = order['info']
 
-            if order_info['status'] == conf.CLOSED_ORDER_STATUS:
+            if order_info['status'] == Config.FILLED_ORDER_STATUS:
                 closed_order_ids.append(order_info['orderId'])
                 logger.info("=> sell order executed at {}".format(order_info['price']))
-                new_buy_price = float(order_info['price']) - conf.GRID_SIZE
+                new_buy_price = float(order_info['price']) - Config.GRID_STEP_SIZE
                 logger.info("=> creating new limit buy order at {}".format(new_buy_price))
-                create_buy_order(conf.SYMBOL, conf.POSITION_SIZE, new_buy_price)
+                create_buy_order(Config.SYMBOL, Config.POSITION_SIZE, new_buy_price)
 
-            time.sleep(conf.CHECK_ORDERS_FREQUENCY)
+            time.sleep(Config.CHECK_ORDERS_FREQUENCY)
 
         # remove closed orders from list
         buy_orders = [buy_order for buy_order in buy_orders if buy_order['orderId'] not in closed_order_ids]

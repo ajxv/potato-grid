@@ -1,7 +1,8 @@
 import ccxt
 import sys
 
-import keys, config
+import keys
+from config import Config
 
 # exchange object
 exchange = ccxt.binance({
@@ -13,13 +14,13 @@ exchange.set_sandbox_mode(True)  # enable sandbox mode
 
 def cancel_orders():
     # Cancel all orders for the symbol
-    exchange.cancel_all_orders(config.SYMBOL)
+    exchange.cancel_all_orders(Config.SYMBOL)
 
     print("cancelled orders")
 
 def view_orders():
     # Retrieve all active orders for the symbol
-    orders = exchange.fetch_orders(config.SYMBOL)
+    orders = exchange.fetch_orders(Config.SYMBOL)
 
     # Print the orders data
     for order in orders:
