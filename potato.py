@@ -31,6 +31,7 @@ ticker = exchange.fetch_ticker(Config.SYMBOL)
 # lists to store the orders
 buy_orders = []
 sell_orders = []
+initial_balance = None
 
 # function to write the current order data to a JSON file
 def write_order_log(new_data, side):
@@ -80,6 +81,8 @@ def init():
 # main trading logic
 def main():
     logger.info('=> Starting grid trading bot')
+    initial_balance = exchange.fetch_balance()['USDT']
+    logger.info(f"=> BALANCE: {initial_balance} USDT")
 
     global buy_orders, sell_orders
     
@@ -119,7 +122,7 @@ def main():
                 closed_order_ids.append(order_info['orderId'])
                 logger.info("=> buy order executed at {}".format(order_info['price']))
                 new_sell_price = float(order_info['price']) + Config.GRID_STEP_SIZE
-                logger.info("=> creating new limit sell order at {}".format(new_sell_price))
+                # logger.info("=> creating new limit sell order at {}".format(new_sell_price))
                 create_sell_order(Config.SYMBOL, Config.POSITION_SIZE, new_sell_price)
 
             time.sleep(Config.CHECK_ORDERS_FREQUENCY)
@@ -139,8 +142,9 @@ def main():
             if order_info['status'] == Config.FILLED_ORDER_STATUS:
                 closed_order_ids.append(order_info['orderId'])
                 logger.info("=> sell order executed at {}".format(order_info['price']))
+                logger.info(f"=> BALANCE: {exchange.fetch_balance()['USDT']} USDT")
                 new_buy_price = float(order_info['price']) - Config.GRID_STEP_SIZE
-                logger.info("=> creating new limit buy order at {}".format(new_buy_price))
+                # logger.info("=> creating new limit buy order at {}".format(new_buy_price))
                 create_buy_order(Config.SYMBOL, Config.POSITION_SIZE, new_buy_price)
 
             time.sleep(Config.CHECK_ORDERS_FREQUENCY)
@@ -156,6 +160,12 @@ def main():
 
         # exit if no sell orders are left
         if len(sell_orders) == 0:
+            # cancel all open buy orders
+            exchange.cancel_all_orders(Config.SYMBOL)
+            
+            logger.info(f"=> Initial BALANCE: {initial_balance} USDT")
+            logger.info(f"=> Final BALANCE: {exchange.fetch_balance()['USDT']} USDT")
+            
             sys.exit("stopping bot, nothing left to sell")
 
 if __name__ == "__main__":
